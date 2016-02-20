@@ -4,6 +4,32 @@ var expressHandleBars = require ('express-handlebars');
 var mysql = require('mysql');
 var bodyParser = require('body-parser');
 
+//Checks the environment port if not use 3000.
+var PORT = process.env.NODE_ENV || 3000;
+
+//Declares the app
+var loginapp = express();
+
+//This sets the body parser which url encodes the url.
+loginapp.use(bodyParser.urlencoded ({extended:false}));loginapp.use(bodyParser.urlencoded ({extended:false}));
+
+//This sets the handlebars layout themes
+loginapp.engine('handlebars', expressHandleBars({defaultLayout: 'main'}));
+loginapp.set('view engine', 'handlebars');
+
+//This is creating a route and passing the html
+loginapp.get('/', function(req, res){
+  res.render('home');
+});
+
+loginapp.get('/', function(req, res){
+  res.render('person');
+});
+
+loginapp.get('/', function(req, res){
+  res.render('register');
+});
+
 //Using mysql.createConnection to creare a connecction to the mysql database.
 var connection = mysql.createConnection ({
   port: 3306,
@@ -15,21 +41,6 @@ var connection = mysql.createConnection ({
 //Connecting to mysql.
 connection.connect();
 
-//Checks the environment port if not use 3000.
-var PORT = process.env.NODE_ENV || 3000;
-
-//Declares the app
-var loginapp = express();
-
-//This sets the handlebars layout themes
-loginapp.engine('handlebars', expressHandleBars({defaultLayout: 'main'}));
-loginapp.set('view engine', 'handlebars');
-
-//This is creating a route and passing the html
-loginapp.get('/', function(req, res){res.render('home');});
-
-//This sets the body parser which url encodes the url.
-loginapp.use(bodyParser.urlencoded ({extended:false}));
 
 /******* Start Regestration Code *******/
 
@@ -40,7 +51,7 @@ loginapp.post('/register', function (req, res) {
 //This is a registering query command and a query that checks if your account already exist.
 //Checks if users email is already in the database and then escapes.
   var insertQuery = "INSERT INTO users(email, password) VALUES(?, ?)";
-  var checkQuery = "SELECT * FROM users WHERE email=" + connection.escape(email);
+  var checkQuery = "SELECT * FROM users WHERE email=?" + connection.escape(email);
 
 //Then we must execute the query command.Thus we do the following.
   connection.query(checkQuery, function(err, results) {
@@ -70,8 +81,8 @@ loginapp.post('/register', function (req, res) {
   loginapp.post('/login', function (req, res) {
     var email = res.body.email;
     var password = res.body.password;
-//Declaring and running the mysql query.
-    var checkQuery = "SELECT * FROM users WHERE email = ? AND password = ?";
+//Declaring and running the mysql query. ? is a place holder for users input
+    var checkQuery = "SELECT * FROM users WHERE email=? AND password=?";
     //Run the query.
     connection.Query(checkQuery, function (err, results) {
       if(err){
@@ -89,6 +100,10 @@ loginapp.post('/register', function (req, res) {
 });
 
 /******* End Log In Code *******/
+
+
+
+
 
 //This sets the loginapp to listen on port 3000
 loginapp.listen(PORT, function(){
