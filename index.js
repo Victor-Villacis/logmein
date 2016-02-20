@@ -3,32 +3,38 @@ var express = require('express');
 var expressHandleBars = require ('express-handlebars');
 var mysql = require('mysql');
 var bodyParser = require('body-parser');
-
+var session = require('express-session');
+//Declares the app
+var loginapp = express();
 //Checks the environment port if not use 3000.
 var PORT = process.env.NODE_ENV || 3000;
 
-//Declares the app
-var loginapp = express();
-
-//This sets the body parser which url encodes the url.
-loginapp.use(bodyParser.urlencoded ({extended:false}));loginapp.use(bodyParser.urlencoded ({extended:false}));
 
 //This sets the handlebars layout themes
-loginapp.engine('handlebars', expressHandleBars({defaultLayout: 'main'}));
+loginapp.engine('handlebars', expressHandleBars({
+  defaultLayout:'main'
+}));
+
 loginapp.set('view engine', 'handlebars');
 
-//This is creating a route and passing the html
-loginapp.get('/', function(req, res){
-  res.render('home');
-});
+//This sets the body parser which url encodes the url.
+loginapp.use(bodyParser.urlencoded ({
+  extended:false
+}));
 
-loginapp.get('/', function(req, res){
-  res.render('person');
-});
+//Using the session here first.
+loginapp.use(session({   //you are calling the variable session to be used by express.
+    secret: 'for i 11lsdqwerty',
+    cookie: {
+      maxAge: 1000 * 60 * 60 * 24 * 365 
+    }, 
+    saveUninitialized:true,
+    resave:false
+}));
 
-loginapp.get('/', function(req, res){
-  res.render('register');
-});
+
+
+
 
 //Using mysql.createConnection to creare a connecction to the mysql database.
 var connection = mysql.createConnection ({
@@ -40,6 +46,13 @@ var connection = mysql.createConnection ({
 });
 //Connecting to mysql.
 connection.connect();
+
+//This is creating a route and passing the html
+loginapp.get('/', function(req, res){
+  res.render('home', {
+    msg:req.query.msg    //You need this here in order to make the session work since you are checking if they are authenthicated.
+  });
+});
 
 
 /******* Start Regestration Code *******/
@@ -66,6 +79,8 @@ loginapp.post('/register', function (req, res) {
       if(err) {
         throw err;
       }
+      //before being redirected
+      req.session.authenticated = true;
       //If no error than redirect to success page as you succeded in registering.
       res.redirect('/success');
     });
@@ -88,14 +103,23 @@ loginapp.post('/register', function (req, res) {
       if(err){
         throw err;
       } else if (results.length > 0){
+        //before being redirected
+        req.session.authenticated = true;
         res.redirect('success')
       } else {
         res.redirect('/?msg = You failed at life');
       }
     });//End connection.Query(checkQuery)
+
     //login succesful
-  loginapp.get('/success', function(res, req) {
-  res.send('You did it my main man')
+  loginapp.get('/success', function (req, res, next) {
+    if(req.session.authenticated === true) {
+      next();
+    } else {
+      res.redirect("/?msg=You need to be authenticated");
+    }
+  }, function(req, res) {
+    res.send('You did it my main man')
   });
 });
 
