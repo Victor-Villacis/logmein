@@ -35,9 +35,12 @@ loginapp.use(session({   //you are calling the variable session to be used by ex
 }));
 //New connection to mysql databse
 var connection = new Sequelize('logmein_authentication', 'root', 'password');
-//Model-representation of data.
+//Model-representation of data to come in the future.
 var User = connection.define('User', {
-    email:Sequelize.STRING,
+    email: {
+      type:Sequelize.STRING,
+      unique: true
+    },
     password:Sequelize.STRING,
     firstName:Sequelize.STRING,
     lastname:Sequelize.STRING
@@ -50,14 +53,12 @@ loginapp.post('/register', function (req, res) {
   var email = req.body.email;
   var password = req.body.password;
 
-  User.create({
-    email: email,
-    password: password
-  }).then(function(result) {
-    res.session.authenticated = user;
+  User.create(req.body).then(function(user) {
+    console.log(user.dataValues)
+    res.session.authenticated = user.dataValues;
     res.redirect('/success');
   }).catch(function (err) {
-    throw err;
+      res.redirect('/?msg= '+ err.message);/*throw err;*/ //instead of throwing an error duplicate user is getting redirected.
   });
 });
 
@@ -82,7 +83,7 @@ loginapp.post('/register', function (req, res) {
     }).then(function(user) {
       if(user) {
         res.redirect('/success');
-        res.session.authenticated = true;
+        res.session.authenticated = user;
       } else {
         res.redirect('/?msg=You failed at life');
       }
@@ -95,7 +96,7 @@ loginapp.post('/register', function (req, res) {
 
    //login succesful
   loginapp.get('/success', function (req, res, next) {
-    if(req.session.authenticated === true) {
+    if(req.session.authenticated) {
       next();
     } else {
       res.redirect("/?msg=You need to be authenticated");
@@ -104,7 +105,7 @@ loginapp.post('/register', function (req, res) {
     res.send('You did it my main man');
   });
 
- connection.sync({force:true}).then(function() {
+ connection.sync(/*{force:true}*/).then(function() {
     //This sets the loginapp to listen on port 3000
     loginapp.listen(PORT, function(){
       console.log("Listening!!!");
