@@ -62,6 +62,31 @@ loginapp.post('/register', function (req, res) {
   });
 });
 
+//passport use methed as callback when being authenticated
+passport.use(new passportLocal.Strategy(function(username, password, done) {
+    //check password in db
+    User.findOne({
+        where: {
+            username: username
+        }
+    }).then(function(user) {
+        //check password against hash
+        if(user){
+            bcrypt.compare(password, user.dataValues.password, function(err, user) {
+                if (user) {
+                  //if password is correct authenticate the user with cookie
+                  done(null, { id: username, username: username });
+                } else{
+                  done(null, null);
+                }
+            });
+        } else {
+            done(null, null);
+        }
+    });
+
+}));
+
 /******* End Regestration Code *******/
 
 
