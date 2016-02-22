@@ -11,6 +11,8 @@ var passport = require('passport');
 var passportLocal = require('passport-local');
 //requiring bcrypt, hashes passwords
 var bcrypt = require("bcryptjs");
+//reguiring conect-flash
+var flash = require('connect-flash');
 //requiring bodyParser an initializing for use
 var bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({
@@ -28,6 +30,8 @@ var exphb = require('express-handlebars');
 app.engine('handlebars', exphb({defaultLayout:'main'}));
 app.set('view engine', 'handlebars');
 
+//Initializing flash
+app.use(flash());
 /************* PASSPORT CODE START *************/
 //Initializing passport.
 app.use(passport.initialize());
@@ -110,12 +114,12 @@ app.post('/save', function(req, res){
       res.redirect('/created?msg=Account has been created');
     }).catch(function(err) {
       console.log(err);
-      res.redirect('/?msg=' + err.errors[0].message);
+      res.redirect('/?msg=' + err.errors[0].message); //? is a new parameter and not a new route
     });
 });
 
 //Once login in passports checks login credential with db to make sure user is authenticated.
-app.post('/check', passport.authenticate('local', {
+app.post('/login', passport.authenticate('local', {
     //checks if your log in credentials are valid and it redirects you to the home page
     successRedirect: '/home',
     //if invalid it redirects to the "/" index page with the msg
