@@ -1,118 +1,148 @@
-//Declares the node modules I need for this app.
+//express setup
 var express = require('express');
-var mysql = require('mysql');
-var expressHandleBars = require ('express-handlebars');
-var bodyParser = require('body-parser');
-var session = require('express-session');
-var Sequelize = require('sequelize');
-
-//New connection to mysql databse
-var connection = new Sequelize('logmein_authentication', 'root', 'password');
-
-//Model-representation of data to come in the future below.
-var User = connection.define('User', {
-    email: {
-      type:Sequelize.STRING,
-      unique: true
-    },
-    password:Sequelize.STRING,
-    firstName:Sequelize.STRING,
-    lastname:Sequelize.STRING
-});
-
-//Declares the app with express
-var loginapp = express();
+var app = express();
 //Checks the environment port if not use 3000.
 var PORT = process.env.NODE_ENV || 3000;
-
-//This sets the handlebars layout themes
-loginapp.engine('handlebars', expressHandleBars({
-  defaultLayout:'main'
+//Sequelize database setup
+var Sequelize = require('sequelize');
+var connection = new Sequelize('user_authentication_db', 'root', 'password');
+//requiring passport last
+var passport = require('passport');
+var passportLocal = require('passport-local');
+//requiring bcrypt, hashes passwords
+var bcrypt = require("bcryptjs");
+//requiring bodyParser an initializing for use
+var bodyParser = require('body-parser');
+app.use(bodyParser.urlencoded({
+    extended: false
 }));
-loginapp.set('view engine', 'handlebars');
-//This sets the body parser which url encodes the url.
-loginapp.use(bodyParser.urlencoded ({
-  extended: false
+//Initializing and requiring middleware express-session, enabaling cookies
+app.use(require('express-session')({
+      secret:'HELLO WORLD',
+      resave: true,
+      saveUninitialized: true,
+      cookie: {secure: false, maxAge : (1000 * 60 * 60 * 2)},
 }));
+//Setting up and requring Handlebars
+var exphb = require('express-handlebars');
+app.engine('handlebars', exphb({defaultLayout:'main'}));
+app.set('view engine', 'handlebars');
 
-//Using the session here first.
-loginapp.use(session({   //you are calling the variable session to be used by express.
-    secret: 'for i 11lsdqwerty',
-    cookie: {
-      maxAge: 1000 * 60 * 60 * 24 * 365
-    },
-    saveUninitialized:true,
-    resave:false
-}));
-
-/******* Start Regestration Code *******/
-//This is creating a route and passing the html
-loginapp.get('/', function(req, res){
-  res.render('home', {
-    msg:req.query.msg    //You need this here in order to make the session work since you are checking if they are authenthicated.
-  });
-});
-//This is creating a post route, that is taking in the users name and password and storing it into a variable.
-loginapp.post('/register', function(req, res) {
-  var email = req.body.email;
-  var password = req.body.password;
-
-  User.create(req.body).then(function(user) {
-    //console.log(user.dataValues)
-    req.session.authenticated = user.dataValues;
-    res.redirect('/success');
-  }).catch(function (err) {
-      res.redirect('/?msg= '+ err.message);/*throw err;*/ //instead of throwing an error duplicate user is getting redirected.
-  });
-});
-
-/******* End Regestration Code *******/
-
-
-
-/******* Start Log In Code *******/
-
-//Runnig the login request. Storing users information in a variable.
-  loginapp.post('/login', function(req, res) {
-    //Get the email and password from the body and storing it into a variable.
-    var email = req.body.email;
-    var password = req.body.password;
-    //Find a user.
+/************* PASSPORT CODE START *************/
+//Initializing passport.
+app.use(passport.initialize());
+app.use(passport.session());
+//passport use method as callback when being authenticated
+passport.use(new passportLocal.Strategy(function(username, password, done) {
+    //check password in db
     User.findOne({
-      WHERE: {
-    //Using the variable  stored information and passing it into mysql.
-        email: email,
-        password: password
-      }
+        where: {
+            username: username
+        }
     }).then(function(user) {
-      if(user) {
-        req.session.authenticated = user.dataValues;
-        res.redirect('/success');
-      } else {
-        res.redirect('/?msg=You failed at life');
+        //check password against hash
+        if(user){
+            bcrypt.compare(password, user.dataValues.password, function(err, user) {
+                if (user) {
+                  //if password is correct authenticate the user with cookie
+                  done(null, { id: username, username: username });
+                } else{
+                  done(null, null);
+                }
+            });
+        } else {
+            done(null, null);
+        }
+    });
+}));
+//change the object used to authenticate to a smaller token, and protects the server from attacks.
+passport.serializeUser(function(user, done) {
+  done(null, user.id);
+});
+passport.deserializeUser(function(id, done){
+  done(null, {id: id, username: id})
+});
+/************* PASSPORT CODE END*************/
+
+/************* SEQUELIZE CODE START*************/
+//sequelize modal
+var User = connection.define('user', {
+    username: {
+      type:Sequelize.STRING,
+      allowNull: false,
+      unique: true
+    },
+    password: {
+      type:Sequelize.STRING,
+      allowNull: false,
+      validate: {
+        len: {
+            args: [4, 12],
+            msg: "Your password must be between 4-12 characthers"
+        }
       }
-    }).catch(function(err) {
-      throw err;
-    });
-  });
-
-/******* End Log In Code *******/
-
-   //login succesful
-  loginapp.get('/success', function(req, res, next) {
-    if(req.session.authenticated) {
-      next();
-    } else {
-      res.redirect("/?msg=You need to be authenticated");
     }
-  }, function(req, res) {
-    res.send('You did it my main man');
+},{
+  hooks: {
+    beforeCreate: function(input){
+      input.password = bcrypt.hashSync(input.password, 10);
+    }
+  }
+});
+// database connection via sequelize
+connection.sync().then(function() {
+  app.listen(PORT, function() {
+      console.log("Listening on!!:" + PORT)
   });
+});
+/************* SEQUELIZE CODE END *************/
 
- connection.sync(/*{force:true}*/).then(function() {
-    //This sets the loginapp to listen on port 3000
-    loginapp.listen(PORT, function(){
-      console.log("Listening!!!");
+/************* EXPRESS HANDLEBARS CODE START *************/
+//Initialize local300host/ page. Once on that path it loads 'index'
+app.get('/', function(req, res) {
+    res.render('index', {msg: req.query.msg});
+});
+
+//Account creation
+app.post('/save', function(req, res){
+    User.create(req.body).then(function(result){
+      //redirects to '/' with the msg, you could redirect to diffrent hb or external link
+      res.redirect('/created?msg=Account has been created');
+    }).catch(function(err) {
+      console.log(err);
+      res.redirect('/?msg=' + err.errors[0].message);
     });
-  });
+});
 
+//Once login in passports checks login credential with db to make sure user is authenticated.
+app.post('/check', passport.authenticate('local', {
+    //checks if your log in credentials are valid and it redirects you to the home page
+    successRedirect: '/home',
+    //if invalid it redirects to the "/" index page with the msg
+    failureRedirect: '/?msg=Login Credentials are not valid'
+}));
+
+//Routes and paths, must be created in order to redirect
+app.get('/home', function(req, res){
+    res.render('home', {
+      user:req.user,
+      isAuthenticated: req.isAuthenticated()
+    });
+});
+
+app.get("/happy", function(req, res){
+    res.render('happy', {
+    user: req.user,
+    isAuthenticated: req.isAuthenticated()
+  });
+})
+
+app.get("/created", function(req, res){
+    res.render('created',{
+    msg: req.query.msg,
+    user: req.user,
+    isAuthenticated: req.isAuthenticated()
+  });
+});
+
+/************* EXPRESS HANDLEBARS CODE END *************/
