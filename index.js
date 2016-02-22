@@ -5,37 +5,11 @@ var expressHandleBars = require ('express-handlebars');
 var bodyParser = require('body-parser');
 var session = require('express-session');
 var Sequelize = require('sequelize');
-//Declares the app with express
-var loginapp = express();
-//Checks the environment port if not use 3000.
-var PORT = process.env.NODE_ENV || 3000;
-//This sets the handlebars layout themes
-loginapp.engine('handlebars', expressHandleBars({
-  defaultLayout:'main'
-}));
-loginapp.set('view engine', 'handlebars');
-//This sets the body parser which url encodes the url.
-loginapp.use(bodyParser.urlencoded ({
-  extended: false
-}));
-//This is creating a route and passing the html
-loginapp.get('/', function(req, res){
-  res.render('home', {
-    msg:req.query.msg    //You need this here in order to make the session work since you are checking if they are authenthicated.
-  });
-});
-//Using the session here first.
-loginapp.use(session({   //you are calling the variable session to be used by express.
-    secret: 'for i 11lsdqwerty',
-    cookie: {
-      maxAge: 1000 * 60 * 60 * 24 * 365
-    },
-    saveUninitialized:true,
-    resave:false
-}));
+
 //New connection to mysql databse
 var connection = new Sequelize('logmein_authentication', 'root', 'password');
-//Model-representation of data to come in the future.
+
+//Model-representation of data to come in the future below.
 var User = connection.define('User', {
     email: {
       type:Sequelize.STRING,
@@ -46,46 +20,51 @@ var User = connection.define('User', {
     lastname:Sequelize.STRING
 });
 
-/******* Start Regestration Code *******/
+//Declares the app with express
+var loginapp = express();
+//Checks the environment port if not use 3000.
+var PORT = process.env.NODE_ENV || 3000;
 
+//This sets the handlebars layout themes
+loginapp.engine('handlebars', expressHandleBars({
+  defaultLayout:'main'
+}));
+loginapp.set('view engine', 'handlebars');
+//This sets the body parser which url encodes the url.
+loginapp.use(bodyParser.urlencoded ({
+  extended: false
+}));
+
+//Using the session here first.
+loginapp.use(session({   //you are calling the variable session to be used by express.
+    secret: 'for i 11lsdqwerty',
+    cookie: {
+      maxAge: 1000 * 60 * 60 * 24 * 365
+    },
+    saveUninitialized:true,
+    resave:false
+}));
+
+/******* Start Regestration Code *******/
+//This is creating a route and passing the html
+loginapp.get('/', function(req, res){
+  res.render('home', {
+    msg:req.query.msg    //You need this here in order to make the session work since you are checking if they are authenthicated.
+  });
+});
 //This is creating a post route, that is taking in the users name and password and storing it into a variable.
-loginapp.post('/register', function (req, res) {
+loginapp.post('/register', function(req, res) {
   var email = req.body.email;
   var password = req.body.password;
 
   User.create(req.body).then(function(user) {
-    console.log(user.dataValues)
-    res.session.authenticated = user.dataValues;
+    //console.log(user.dataValues)
+    req.session.authenticated = user.dataValues;
     res.redirect('/success');
   }).catch(function (err) {
       res.redirect('/?msg= '+ err.message);/*throw err;*/ //instead of throwing an error duplicate user is getting redirected.
   });
 });
-
-//passport use methed as callback when being authenticated
-passport.use(new passportLocal.Strategy(function(username, password, done) {
-    //check password in db
-    User.findOne({
-        where: {
-            username: username
-        }
-    }).then(function(user) {
-        //check password against hash
-        if(user){
-            bcrypt.compare(password, user.dataValues.password, function(err, user) {
-                if (user) {
-                  //if password is correct authenticate the user with cookie
-                  done(null, { id: username, username: username });
-                } else{
-                  done(null, null);
-                }
-            });
-        } else {
-            done(null, null);
-        }
-    });
-
-}));
 
 /******* End Regestration Code *******/
 
@@ -94,7 +73,7 @@ passport.use(new passportLocal.Strategy(function(username, password, done) {
 /******* Start Log In Code *******/
 
 //Runnig the login request. Storing users information in a variable.
-  loginapp.post('/login', function (req, res) {
+  loginapp.post('/login', function(req, res) {
     //Get the email and password from the body and storing it into a variable.
     var email = req.body.email;
     var password = req.body.password;
@@ -107,8 +86,8 @@ passport.use(new passportLocal.Strategy(function(username, password, done) {
       }
     }).then(function(user) {
       if(user) {
+        req.session.authenticated = user.dataValues;
         res.redirect('/success');
-        res.session.authenticated = user;
       } else {
         res.redirect('/?msg=You failed at life');
       }
@@ -120,7 +99,7 @@ passport.use(new passportLocal.Strategy(function(username, password, done) {
 /******* End Log In Code *******/
 
    //login succesful
-  loginapp.get('/success', function (req, res, next) {
+  loginapp.get('/success', function(req, res, next) {
     if(req.session.authenticated) {
       next();
     } else {
