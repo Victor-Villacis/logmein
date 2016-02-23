@@ -29,6 +29,7 @@
     "mysql": "^2.10.2",
     "passport": "^0.3.2",
     "passport-local": "^1.0.0",
+    "pg-hstore": "^2.3.2",
     "sequelize": "^3.19.3",
     "sessions": "0.0.2-7"
   }

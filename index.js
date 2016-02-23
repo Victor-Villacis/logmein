@@ -78,7 +78,7 @@ var User = connection.define('user', {
     },
     password: {
       type:Sequelize.STRING,
-      allowNull: false,
+      allowNull: true,
       validate: {
         len: {
             args: [4, 12],
@@ -106,6 +106,10 @@ connection.sync().then(function() {
 app.get('/', function(req, res) {
     res.render('index', {msg: req.query.msg});
 });
+
+app.get('/register', function(req, res) {
+  res.render('register', {msg: req.query.msg});
+})
 
 //Account creation
 app.post('/save', function(req, res){

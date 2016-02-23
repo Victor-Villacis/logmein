@@ -31,3 +31,16 @@ node_modules
 
 # Optional REPL history
 .node_repl_history
+
+
+/views/test/regestration.html
+/views/test/regestration2.html
+/views/test/regestration3.html
+
+"test"
+/views/test
+.test
+."test"
+
+node_modules
+
