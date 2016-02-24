@@ -7,7 +7,7 @@
           <div class="input-field col s6">
           <i class="material-icons prefix">account_circle</i>
 
-            <input id="first_name" type="text" class="validate" name="firstName">
+            <input id="first_name" type="text" class="validate" name="username">
             <label class"active" for="first_name">First Name</label>
 
           </div>
@@ -31,7 +31,7 @@
           <div class="input-field col s12">
           <i class="material-icons prefix">email</i>
 
-            <input id="email" type="email" class="validate" name="username">
+            <input id="email" type="email" class="validate" name="email">
             <label for="email">Email</label>
 
           </div>
@@ -41,19 +41,19 @@
   <div class="row">
           <p class="col s3">
 
-          <input type="radio" id="student" name="student" value="student"/>
+          <input name="group1" type="radio" id="student" name="student"/>
           <label for="student">Student</label>
 
           </p>
           <p class="col s3">
 
-          <input type="radio" id="instructor" name="instructor" value="instructor"/>
+          <input name="group1" type="radio" id="instructor" name="instructor"/>
           <label for="instructor">Instructor</label>
 
           </p>
           <p class="col s3">
 
-          <input class="with-gap" type="radio" id="TA" name="TA" value="TA"  />
+          <input class="with-gap" name="group1" type="radio" name="TA" id="TA"  />
           <label for="TA">TA</label>
 
           </p>
@@ -61,10 +61,5 @@
            <i class="material-icons right">send</i>
     </button>
       </form>
-        <div>
-        <a class="btn btn-lg btn-success" href="http://localhost:3000/register" role="button">CLEAR FIELDS</a>
-        </div>
-  </div>
     </div>
-
-      <h3 class="container" style="color:red"> {{ msg }} </h3> 
+  </div>

@@ -41,7 +41,7 @@ passport.use(new passportLocal.Strategy(function(username, password, done) {
     //check password in db
     User.findOne({
         where: {
-            username: username
+            username:username,
         }
     }).then(function(user) {
         //check password against hash
@@ -78,16 +78,76 @@ var User = connection.define('user', {
     },
     password: {
       type:Sequelize.STRING,
-      allowNull: true,
+      allowNull: false,
       validate: {
         len: {
             args: [4, 12],
-            msg: "Your password must be between 4-12 characthers"
+            msg: ", or password must be between 4-12 charachters"
         }
       }
+    },
+    firstName: {
+      type:Sequelize.STRING,
+    },
+    lastName:{
+      type:Sequelize.STRING,
+    },
+    TA: {
+      type:Sequelize.STRING,
+      allowNull: true,
+    },
+    student: {
+      type:Sequelize.STRING,
+      allowNull: true,
+    },
+    instructor: {
+      type:Sequelize.STRING,
+      allowNull: true,
     }
 },{
   hooks: {
+    beforeCreate: function(input){
+      input.password = bcrypt.hashSync(input.password, 10);
+    }
+  }
+});
+
+var Instructor = connection.define('Instructor',{
+    username: {
+      type:Sequelize.STRING,
+      allowNull: false,
+      unique: true
+    },
+    password: {
+      type:Sequelize.STRING,
+      allowNull: false,
+      validate: {
+        len: {
+            args: [4, 12],
+            msg: ", or password must be between 4-12 charachters"
+        }
+      }
+    },
+    firstName: {
+      type:Sequelize.STRING,
+    },
+    lastName:{
+      type:Sequelize.STRING,
+    },
+    TA: {
+      type:Sequelize.STRING,
+      allowNull: true,
+    },
+    student: {
+      type:Sequelize.STRING,
+      allowNull: true,
+    },
+    instructor: {
+      type:Sequelize.STRING,
+      allowNull: true,
+    }
+  }, {
+   hooks: {
     beforeCreate: function(input){
       input.password = bcrypt.hashSync(input.password, 10);
     }
@@ -111,14 +171,18 @@ app.get('/register', function(req, res) {
   res.render('register', {msg: req.query.msg});
 })
 
+app.get('/login', function(req, res) {
+  res.render('login', {msg: req.query.msg});
+});
+
 //Account creation
 app.post('/save', function(req, res){
     User.create(req.body).then(function(result){
       //redirects to '/' with the msg, you could redirect to diffrent hb or external link
-      res.redirect('/created?msg=Account has been created');
+      res.redirect('/register?msg=Account has been created');
     }).catch(function(err) {
       console.log(err);
-      res.redirect('/?msg=' + err.errors[0].message); //? is a new parameter and not a new route
+      res.redirect('/register?msg='+ "E-mail " + err.errors[0].message); //? is a new parameter and not a new route
     });
 });
 
