@@ -1,7 +1,18 @@
+<nav>
+    <div class="nav-wrapper">
+      <a href="#" class="brand-logo center">RCB</a>
+      <ul id="nav-mobile" class="left hide-on-med-and-down">
+        <li><a href="http://localhost:3000/">Home</a></li>
+        <li><a href="">Logout</a></li>
+        <li><a href="http://localhost:3000/login">Login</a></li>
+      </ul>
+    </div>
+  </nav>
+
 <div style="margin-top:10%;"class="container col s1">
     <div class="row">
 
-      <form action="/save" method="post" class="col s12">
+      <form action="/register" method="post" class="col s12">
 
         <div class="row">
           <div class="input-field col s6">
@@ -61,10 +72,16 @@
            <i class="material-icons right">send</i>
     </button>
       </form>
-        <div>
-        <a class="btn btn-lg btn-success" href="http://localhost:3000/register" role="button">CLEAR FIELDS</a>
-        </div>
   </div>
     </div>
+
+      <div class="container">
+        <div class="row">
+        <div class="col s1">
+          <a class="btn btn-lg btn-success" href="http://localhost:3000/register" role="button">CLEAR FIELDS</a>
+        </div>
+        </div>
+      </div>
+
 
       <h3 class="container" style="color:red"> {{ msg }} </h3> 

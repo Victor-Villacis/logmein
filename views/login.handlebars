@@ -1,23 +1,35 @@
-<h1>Login</h1>
+ <nav>
+    <div class="nav-wrapper">
+      <a href="#" class="brand-logo center">RCB</a>
+      <ul id="nav-mobile" class="left hide-on-med-and-down">
+        <li><a href="http://localhost:3000/">Home</a></li>
+      </ul>
+    </div>
+  </nav>
 
- <div class="row">
-  <div class="col-md-6">
-    <form action="/login" method="post">
-      <div class="form-group">
-        <label for="">E-mails</label>
-        <input type="email" class="validate" id="email" placeholder="email" name="username">
-      </div>
+<h3 class="container" style="color:bold">Please Log In</h3>
+ <div class="container jumbotron">
+   <div class="row">
+    <div class="col-md-6">
+      <form action="/login" method="post">
+        <div class="form-group">
+          <label for="">E-mails</label>
+          <input type="email" class="validate" id="email" placeholder="email" name="username">
+        </div>
+     </div>
+    </div>
+      <br>
+   <div class="row">
+    <div class="col-md-6">
+        <div class="form-group">
+          <label for="">Password</label>
+          <input type="password" class="validate" id="password" placeholder="Password" name="password">
+        </div>
+     </div>
    </div>
-  </div>
     <br>
-<div class="row">
-  <div class="col-md-6">
-      <div class="form-group">
-        <label for="">Password</label>
-        <input type="password" class="validate" id="password" placeholder="Password" name="password">
-      </div>
-   </div>
-</div>
-  <br>
-  <button type="submit" class="btn btn-default">Submit</button>
-</form>
+    <button type="submit" class="btn btn-default">Submit</button>
+   </form>
+
+<a href="http://localhost:3000/register" class="waves-effect waves-light btn"><i class="material-icons right">cloud</i>RGISTER</a>
+<h3 class="container" style="color:red"> {{ msg }} </h3> 

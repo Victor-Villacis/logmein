@@ -1,7 +1,43 @@
-<h1>Secure Page!</h1>
+<nav>
+    <div class="nav-wrapper">
+      <a href="#" class="brand-logo center">RCB</a>
+      <ul id="nav-mobile" class="left hide-on-med-and-down">
+        <li><a href="http://localhost:3000/">Home</a></li>
+        <li><a href="">Logout</a></li>
+        <li><a href="http://localhost:3000/login">Login</a></li>
+      </ul>
+      <div>
+        {{#if isAuthenticated}}
+      <div class="">Logged in as {{ user.username}}</div>
+      {{else}}
+      </div>
+    </div>
+  </nav>
 
-{{#if isAuthenticated}}
-  <h2>Hello there {{ user.username}}</h2>
-{{else}}
-  <h2>SORRY</h2>
-{{/if}}
+  <div class="container">
+    <h1 style="color:yellow">SORRY YOU ARE NOT LOGGED IN</h1>
+      {{/if}}
+
+
+<div class="row">
+  <div class="col s6">
+    <a href="">    <img class="materialboxed" width="650" src="http://phandroid.s3.amazonaws.com/wp-content/uploads/2014/10/mountains.jpg">
+  </a>
+   <a href="">    <img class="materialboxed" width="650" src="http://www.jaspermarriagecommissioner.com/page1/files/wyoming-rocky-mountains.jpg">
+  </a>
+   <a href="">    <img class="materialboxed" width="650" src="http://phandroid.s3.amazonaws.com/wp-content/uploads/2014/10/mountains.jpg">
+  </a>
+  </div>
+
+<div class="row">
+  <div class="col s6">
+    <a href="">    <img class="materialboxed" width="650" src="http://phandroid.s3.amazonaws.com/wp-content/uploads/2014/10/mountains.jpg">
+  </a>
+   <a href="">    <img class="materialboxed" width="650" src="http://www.jaspermarriagecommissioner.com/page1/files/wyoming-rocky-mountains.jpg">
+  </a>
+   <a href="">    <img class="materialboxed" width="650" src="http://phandroid.s3.amazonaws.com/wp-content/uploads/2014/10/mountains.jpg">
+  </a>
+  </div>
+</div>
+
+  </div>

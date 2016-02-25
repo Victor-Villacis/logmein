@@ -31,7 +31,7 @@ app.engine('handlebars', exphb({defaultLayout:'main'}));
 app.set('view engine', 'handlebars');
 
 //Initializing flash
-app.use(flash());
+// app.use(flash());
 /************* PASSPORT CODE START *************/
 //Initializing passport.
 app.use(passport.initialize());
@@ -82,7 +82,7 @@ var User = connection.define('user', {
       validate: {
         len: {
             args: [4, 12],
-            msg: ", or password must be between 4-12 charachters"
+            msg: ", or password must be between 4-12 characters"
         }
       }
     },
@@ -100,10 +100,13 @@ var User = connection.define('user', {
       type:Sequelize.STRING,
       allowNull: true,
     },
+    key:{
+      type:Sequelize.STRING
+    },
     instructor: {
       type:Sequelize.STRING,
       allowNull: true,
-    }
+    },
 },{
   hooks: {
     beforeCreate: function(input){
@@ -112,47 +115,6 @@ var User = connection.define('user', {
   }
 });
 
-var Instructor = connection.define('Instructor',{
-    username: {
-      type:Sequelize.STRING,
-      allowNull: false,
-      unique: true
-    },
-    password: {
-      type:Sequelize.STRING,
-      allowNull: false,
-      validate: {
-        len: {
-            args: [4, 12],
-            msg: ", or password must be between 4-12 charachters"
-        }
-      }
-    },
-    firstName: {
-      type:Sequelize.STRING,
-    },
-    lastName:{
-      type:Sequelize.STRING,
-    },
-    TA: {
-      type:Sequelize.STRING,
-      allowNull: true,
-    },
-    student: {
-      type:Sequelize.STRING,
-      allowNull: true,
-    },
-    instructor: {
-      type:Sequelize.STRING,
-      allowNull: true,
-    }
-  }, {
-   hooks: {
-    beforeCreate: function(input){
-      input.password = bcrypt.hashSync(input.password, 10);
-    }
-  }
-});
 // database connection via sequelize
 connection.sync().then(function() {
   app.listen(PORT, function() {
@@ -167,16 +129,17 @@ app.get('/', function(req, res) {
     res.render('index', {msg: req.query.msg});
 });
 
-app.get('/register', function(req, res) {
-  res.render('register', {msg: req.query.msg});
-})
-
 app.get('/login', function(req, res) {
   res.render('login', {msg: req.query.msg});
 });
 
-//Account creation
-app.post('/save', function(req, res){
+app.get('/register', function(req, res) {
+  res.render('register', {msg: req.query.msg});
+});
+
+
+//Account creation via sequelize
+app.post('/register', function(req, res){
     User.create(req.body).then(function(result){
       //redirects to '/' with the msg, you could redirect to diffrent hb or external link
       res.redirect('/register?msg=Account has been created');
@@ -191,7 +154,7 @@ app.post('/login', passport.authenticate('local', {
     //checks if your log in credentials are valid and it redirects you to the home page
     successRedirect: '/home',
     //if invalid it redirects to the "/" index page with the msg
-    failureRedirect: '/?msg=Login Credentials are not valid'
+    failureRedirect: '/login?msg=Login Credentials are not valid'
 }));
 
 //Routes and paths, must be created in order to redirect
@@ -218,3 +181,19 @@ app.get("/created", function(req, res){
 });
 
 /************* EXPRESS HANDLEBARS CODE END *************/
+ //error handlers must go after exphb code
+app.use(function(req, res, next) {
+  var err = new Error('Not Found');
+  err.status = 404;
+  next(err);
+});
+//catch 404 and forward to error handler
+if (app.get('env') === 'development') {
+  app.use(function(err, req, res, next) {
+    res.status(err.status || 500);
+    res.render('error', {
+      message: err.message,
+      error: err
+    });
+  });
+}

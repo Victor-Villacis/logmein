@@ -1,0 +1,20 @@
+
+
+  <nav>
+    <div class="nav-wrapper">
+      <a href="#" class="brand-logo center">RCB</a>
+      <ul id="nav-mobile" class="left hide-on-med-and-down">
+        <li><a href="http://localhost:3000/">Home</a></li>
+        <li><a href="">Logout</a></li>
+      </ul>
+    </div>
+  </nav>
+
+<div class="container center">
+{{#if isAuthenticated}}
+  <h4 class="well">You are logged in as{{ user.username}}</h4>
+{{else}}
+  <h2 style="color:red;">404 ERROR</h2>
+<a href="http://localhost:3000/login" class="waves-effect waves-light btn"><i class="material-icons right">cloud</i>LogIn</a>
+{{/if}}
+</div>
